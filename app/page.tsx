@@ -143,8 +143,11 @@ export default function Home() {
         </h2>
         <div className="row">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126748.28538717456!2d107.57311640625!3d-6.903444300000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e6398252477f%3A0x146a944448d273bc!2sBandung%2C%20Jawa%20Barat!5e0!3m2!1sid!2sid!4v1672408727281!5m2!1sid!2sid"
-            allowFullScreen={true}
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3959.556275243793!2d110.44219592741067!3d-7.061306999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e708f4c0d7d2c59%3A0x821209d1cf01ec21!2sKos%20Wisma%20Dewa%201!5e0!3m2!1sid!2sid!4v1777212395148!5m2!1sid!2sid"
+            width="600"
+            height="450"
+            style={{ border: 0 }}
+            allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             className="map"
@@ -189,11 +192,6 @@ export default function Home() {
           <a href="#about">Tentang Kami</a>
           <a href="#menu">Menu</a>
           <a href="#contact">Kontak</a>
-        </div>
-        <div className="credit">
-          <p>
-            Created by <a href="">Jonathan Ordrick</a>. | &copy; 2026.
-          </p>
         </div>
       </footer>
     </>
