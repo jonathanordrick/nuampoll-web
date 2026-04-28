@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sambal Nuampoll - Nampol Pedasnya!",
-  description: "Katalog sambal terbaik untuk selera nusantara",
+  title: "Nuampoll | Sekali Nyoba, Langsung Nuampoll!",
+  description: "Produk sambal dan makanan pedas terbaik untuk selera nusantara",
 };
 
 export default function RootLayout({
