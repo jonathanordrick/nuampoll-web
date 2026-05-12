@@ -15,7 +15,7 @@ export default function Contact() {
           {/* Google Maps di Kiri */}
           <div className="rounded-2xl p-1 bg-[#f00000] shadow-2xl"> {/* Peta di dalam bingkai merah */}
             <div className="rounded-xl overflow-hidden bg-white">
-                <iframe
+              <iframe
                 src="https://www.google.com/maps/embed?..."
                 width="100%"
                 height="400"
@@ -23,9 +23,9 @@ export default function Contact() {
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+              ></iframe>
             </div>
-            </div>
+          </div>
 
           {/* Social Media di Kanan */}
           <div className="flex flex-col justify-center items-center gap-8">
@@ -68,8 +68,7 @@ export default function Contact() {
 
             <div className="text-center text-[#1a1a1a] mt-6 space-y-3">
               <p className="flex items-center justify-center gap-2"><FaMapPin /> Jalan Raya Nuampoll No. 123</p>
-              <p className="flex items-center justify-center gap-2"><BsTelephone /> +62 822 2004 7070</p>
-              <p className="flex items-center justify-center gap-2"><MdEmail /> info@nuampoll.com</p>
+              <p className="flex items-center justify-center gap-2"><BsTelephone /> +62-822-2004-7070</p>
             </div>
           </div>
         </div>
