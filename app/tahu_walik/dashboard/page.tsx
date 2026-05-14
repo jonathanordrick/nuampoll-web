@@ -289,7 +289,7 @@ export default function AdminOmzet() {
               <h3 className="text-2xl font-bold">
                 {modalType === "create" ? "Tambah" : "Edit"} <span className="text-red-600">Omzet</span>
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition cursor-pointer">
                 <FiX className="w-6 h-6" />
               </button>
             </div>
@@ -312,7 +312,7 @@ export default function AdminOmzet() {
                   type="date"
                   value={form.tanggal}
                   onChange={(e) => setForm({ ...form, tanggal: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600 cursor-pointer"
                   required
                 />
               </div>
@@ -321,7 +321,7 @@ export default function AdminOmzet() {
                 <select
                   value={form.metode}
                   onChange={(e) => setForm({ ...form, metode: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600 appearance-none"
+                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600 appearance-none cursor-pointer"
                 >
                   <option value="Cash">Cash</option>
                   <option value="Transfer/QRIS">Transfer/QRIS</option>
@@ -329,7 +329,7 @@ export default function AdminOmzet() {
               </div>
               <button
                 type="submit"
-                className="w-full mt-4 rounded-full bg-red-600 hover:bg-red-700 py-4 font-bold text-lg transition-all shadow-lg hover:scale-[1.02]"
+                className="w-full mt-4 rounded-full bg-red-600 hover:bg-red-700 py-4 font-bold text-lg transition-all shadow-lg hover:scale-[1.02] cursor-pointer"
               >
                 {modalType === "create" ? "Simpan Data" : "Update Data"}
               </button>
@@ -368,19 +368,18 @@ export default function AdminOmzet() {
       {/* Admin Controls Section */}
       <div className="max-w-6xl mx-auto mt-12 pb-12 border-t border-gray-200 pt-8 text-center">
         <div className="flex flex-wrap justify-center gap-4">
-          <button 
+          <button
             onClick={togglePOStatus}
-            className={`inline-flex items-center gap-2 px-8 py-3 font-bold rounded-full transition-all shadow-sm cursor-pointer border-2 ${
-              isPOOpen 
-                ? "bg-green-600 border-green-600 text-white hover:bg-green-700" 
-                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-            }`}
+            className={`inline-flex items-center gap-2 px-8 py-3 font-bold rounded-full transition-all shadow-sm cursor-pointer border-2 ${isPOOpen
+              ? "bg-green-600 border-green-600 text-white hover:bg-green-700"
+              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+              }`}
           >
             <div className={`w-3 h-3 rounded-full ${isPOOpen ? "bg-white animate-pulse" : "bg-gray-300"}`}></div>
             PO: {isPOOpen ? "DIBUKA" : "DITUTUP"}
           </button>
 
-          <button 
+          <button
             onClick={() => signOut({ callbackUrl: "/tahu_walik" })}
             className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 border-2 border-red-600 text-white font-bold rounded-full hover:bg-red-700 transition-all shadow-sm cursor-pointer"
           >
