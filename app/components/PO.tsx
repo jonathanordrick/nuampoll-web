@@ -2,8 +2,18 @@
 import React from 'react';
 
 export default function PO() {
-    // Tambahkan variable ini di dalam function Menu sebelum return
-    const isPOOpen = false; // Ganti ke false untuk menutup PO secara otomatis
+    const [isPOOpen, setIsPOOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        fetch("/api/settings")
+            .then(res => res.json())
+            .then(data => {
+                if (data.isPOOpen !== undefined) {
+                    setIsPOOpen(data.isPOOpen === "true");
+                }
+            })
+            .catch(err => console.error("Failed to fetch PO status:", err));
+    }, []);
 
     return (
         <section id="preorder" className="py-24 bg-[#fff0c7]">

@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Nuampoll | Sekali Nyoba, Langsung Nuampoll!",
@@ -17,7 +18,9 @@ export default function RootLayout({
         {/* Load Feather Icons dari CDN agar icon lama kamu tetap jalan */}
         <script src="https://unpkg.com/feather-icons"></script>
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -77,6 +77,7 @@ export default function Menu() {
               </div>
 
               {/* Button Tutup di bawah */}
+              <p className="mt-4 text-xl text-center md:text-2xl font-medium">Klik 2x jika hanya muncul kotak putih</p>
               <p className="mt-4 text-xl text-center md:text-2xl font-medium">Geser ke kanan untuk melihat menu lainnya</p>
               <button
                 onClick={() => setShowModal(false)}
