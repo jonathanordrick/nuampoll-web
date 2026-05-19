@@ -16,7 +16,7 @@ export default function Contact() {
           <div className="rounded-2xl p-1 bg-[#f00000] shadow-2xl"> {/* Peta di dalam bingkai merah */}
             <div className="rounded-xl overflow-hidden bg-white">
               <iframe
-                src="https://www.google.com/maps/embed?..."
+                src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3958.490898780944!2d110.42694357499892!3d-7.184688992820413!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zN8KwMTEnMDQuOSJTIDExMMKwMjUnNDYuMyJF!5e0!3m2!1sen!2sid!4v1779177090442!5m2!1sen!2sid"
                 width="100%"
                 height="400"
                 style={{ border: 0 }}
@@ -67,8 +67,8 @@ export default function Contact() {
             </div>
 
             <div className="text-center text-[#1a1a1a] mt-6 space-y-3">
-              <p className="flex items-center justify-center gap-2"><FaMapPin /> Jalan Raya Nuampoll No. 123</p>
-              <p className="flex items-center justify-center gap-2"><BsTelephone /> +62-822-2004-7070</p>
+              <p className="flex items-center justify-center gap-2">Jalan Merak No. 19 RT 03 / RW 08 Kelurahan Karangjati, Kecamatan Bergas, Kabupaten Semarang, Jawa Tengah</p>
+              <p className="flex items-center justify-center gap-2">+62-822-2004-7070</p>
             </div>
           </div>
         </div>
