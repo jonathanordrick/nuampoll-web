@@ -126,8 +126,14 @@ export async function GET() {
         }
 
         recentVisits.forEach((visit) => {
-            // Waktu lokal jam berkunjung
-            const hour = new Date(visit.createdAt).getHours();
+            // Waktu lokal jam berkunjung (dikonversi ke zona waktu Asia/Jakarta secara aman)
+            const hourString = new Date(visit.createdAt).toLocaleTimeString("en-US", {
+                timeZone: "Asia/Jakarta",
+                hour12: false,
+                hour: "2-digit",
+            });
+            const hour = parseInt(hourString, 10);
+
             if (hour >= 6 && hour < 12) hourStats.pagi++;
             else if (hour >= 12 && hour < 17) hourStats.siang++;
             else if (hour >= 17 && hour < 21) hourStats.sore++;
