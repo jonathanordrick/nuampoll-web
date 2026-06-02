@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { signOut } from "next-auth/react";
-import { FiPlus, FiEdit, FiTrash2, FiX, FiCheck, FiChevronLeft, FiChevronRight, FiLogOut } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash2, FiX, FiCheck, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import AdminNavbar from "../components/AdminNavbar";
 
 interface OmzetItem {
   id: number;
@@ -147,10 +147,12 @@ export default function AdminOmzet() {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="min-h-screen bg-[#fff0c7] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+    <>
+      <AdminNavbar />
+      <div className="min-h-screen bg-[#fff0c7] pt-32 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
               Dashboard <span className="text-red-600">Nuampoll</span>
@@ -370,25 +372,18 @@ export default function AdminOmzet() {
         <div className="flex flex-wrap justify-center gap-4">
           <button
             onClick={togglePOStatus}
-            className={`inline-flex items-center gap-2 px-8 py-3 font-bold rounded-full transition-all shadow-sm cursor-pointer border-2 ${isPOOpen
+            className={`inline-flex items-center gap-2 px-8 py-3 font-bold rounded-full transition-all shadow-md cursor-pointer border-2 ${isPOOpen
               ? "bg-green-600 border-green-600 text-white hover:bg-green-700"
               : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
               }`}
           >
             <div className={`w-3 h-3 rounded-full ${isPOOpen ? "bg-white animate-pulse" : "bg-gray-300"}`}></div>
-            PO: {isPOOpen ? "DIBUKA" : "DITUTUP"}
-          </button>
-
-          <button
-            onClick={() => signOut({ callbackUrl: "/tahu_walik" })}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 border-2 border-red-600 text-white font-bold rounded-full hover:bg-red-700 transition-all shadow-sm cursor-pointer"
-          >
-            <FiLogOut className="w-5 h-5" />
-            Keluar (Logout)
+            Status PO Website: {isPOOpen ? "DIBUKA" : "DITUTUP"}
           </button>
         </div>
         <p className="text-gray-400 text-sm mt-4 italic">Masuk sebagai Admin Nuampoll</p>
       </div>
     </div>
+    </>
   );
 }

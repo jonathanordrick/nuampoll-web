@@ -24,3 +24,11 @@ model Setting {
   key   String @id
   value String
 }
+
+model PageVisit {
+  id        Int      @id @default(autoincrement())
+  path      String   @default("/")
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
