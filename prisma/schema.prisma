@@ -32,3 +32,20 @@ model PageVisit {
   userAgent String?
   createdAt DateTime @default(now())
 }
+
+model GrowthMetric {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recordedAt      DateTime @unique @map("recorded_at") @db.Date
+  igFollowers     Int?     @map("ig_followers")
+  tiktokFollowers Int?     @map("tiktok_followers")
+  totalCustomers  Int?     @map("total_customers")
+  websiteVisitors Int?     @map("website_visitors")
+  activeOrders    Int?     @map("active_orders")
+  testimonials    Int?     @map("testimonials")
+  totalRevenue    BigInt?  @map("total_revenue")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("growth_metrics")
+}

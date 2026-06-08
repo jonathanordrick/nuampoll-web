@@ -45,7 +45,7 @@ export default function PO() {
                             </p>
 
                             <a
-                                href="https://forms.gle/Lsp87uBMh9JXpuf4A" // Ganti dengan link GForm kamu
+                                href="https://wa.me/6282220047070?text=Halo,%20Mau%20PO%20{menu%20kesukaanmu}" // Ganti dengan link GForm kamu
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-block w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-12 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-red-600/20"

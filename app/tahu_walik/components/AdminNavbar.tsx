@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { FiLayout, FiBarChart2, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiLayout, FiBarChart2, FiLogOut, FiMenu, FiX, FiTrendingUp } from "react-icons/fi";
 import Image from "next/image";
 
 export default function AdminNavbar() {
@@ -13,6 +13,7 @@ export default function AdminNavbar() {
   const navItems = [
     { name: "Dashboard", href: "/tahu_walik/dashboard", icon: FiLayout },
     { name: "Analytics", href: "/tahu_walik/analitycs", icon: FiBarChart2 },
+    { name: "Growth", href: "/tahu_walik/growth", icon: FiTrendingUp },
   ];
 
   return (

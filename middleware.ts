@@ -7,5 +7,11 @@ export default withAuth({
 });
 
 export const config = {
-    matcher: ["/tahu_walik/dashboard/:path*", "/tahu_walik/analitycs/:path*", "/tahu_walik/analitycs"]
+    matcher: [
+        "/tahu_walik/dashboard/:path*",
+        "/tahu_walik/analitycs/:path*",
+        "/tahu_walik/analitycs",
+        "/tahu_walik/growth/:path*",
+        "/tahu_walik/growth"
+    ]
 };

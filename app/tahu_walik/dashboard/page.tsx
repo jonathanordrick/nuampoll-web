@@ -146,6 +146,28 @@ export default function AdminOmzet() {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  if (loading) {
+    return (
+      <>
+        <AdminNavbar />
+        <div className="min-h-screen bg-[#fff0c7] flex items-center justify-center pt-20">
+          <div className="text-center">
+            {/* Beautiful Custom Pepper Loader */}
+            <div className="relative w-20 h-20 mx-auto mb-4 animate-bounce">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg border border-red-500 shadow-red-600/30">
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C11.5 2 11 3 11 4.5C11 5.3 11.2 6.1 11.5 6.7C8.4 7.2 6 9.8 6 13C6 16.9 9.1 20 13 20C16.9 20 20 16.9 20 13C20 10 18 7.5 15.2 6.8C15.3 6.6 15.4 6.3 15.4 6C15.4 4.5 14.5 2 14 2C13.5 2 13 3.5 13 4.5C13 4.8 12.9 5.2 12.7 5.5C12.5 5.2 12.3 4.8 12.3 4.5C12.3 3.5 12.5 2 12 2Z" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 animate-pulse">Memuat Dashboard Nuampoll...</h2>
+            <p className="text-gray-500 text-sm mt-1">Sabar ya bro, lagi ngambil data ter-update</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <AdminNavbar />
