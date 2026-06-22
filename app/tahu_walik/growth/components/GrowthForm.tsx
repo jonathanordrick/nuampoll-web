@@ -6,9 +6,16 @@ export interface GrowthMetric {
     id: string;
     recordedAt: string; // YYYY-MM-DD
     igFollowers: number | null;
+    igViews: number | null;
+    igPosts: number | null;
+    igLikes: number | null;
     tiktokFollowers: number | null;
+    tiktokViews: number | null;
+    tiktokPosts: number | null;
+    tiktokLikes: number | null;
     totalCustomers: number | null;
     websiteVisitors: number | null;
+    websiteViews: number | null;
     activeOrders: number | null;
     testimonials: number | null;
     totalRevenue: number | null;
@@ -26,9 +33,16 @@ export default function GrowthForm({ isOpen, onClose, onSuccess, editingItem }: 
     const [form, setForm] = useState({
         recordedAt: new Date().toISOString().split("T")[0],
         igFollowers: "",
+        igViews: "",
+        igPosts: "",
+        igLikes: "",
         tiktokFollowers: "",
+        tiktokViews: "",
+        tiktokPosts: "",
+        tiktokLikes: "",
         totalCustomers: "",
         websiteVisitors: "",
+        websiteViews: "",
         activeOrders: "",
         testimonials: "",
         totalRevenue: "",
@@ -44,24 +58,42 @@ export default function GrowthForm({ isOpen, onClose, onSuccess, editingItem }: 
         if (editingItem) {
             // Konversi ISO string/Date ke format YYYY-MM-DD
             const dateStr = new Date(editingItem.recordedAt).toISOString().split("T")[0];
+            const valToString = (val: any) => {
+                return val !== null && val !== undefined ? val.toString() : "";
+            };
+
             setForm({
                 recordedAt: dateStr,
-                igFollowers: editingItem.igFollowers !== null ? editingItem.igFollowers.toString() : "",
-                tiktokFollowers: editingItem.tiktokFollowers !== null ? editingItem.tiktokFollowers.toString() : "",
-                totalCustomers: editingItem.totalCustomers !== null ? editingItem.totalCustomers.toString() : "",
-                websiteVisitors: editingItem.websiteVisitors !== null ? editingItem.websiteVisitors.toString() : "",
-                activeOrders: editingItem.activeOrders !== null ? editingItem.activeOrders.toString() : "",
-                testimonials: editingItem.testimonials !== null ? editingItem.testimonials.toString() : "",
-                totalRevenue: editingItem.totalRevenue !== null ? editingItem.totalRevenue.toString() : "",
+                igFollowers: valToString(editingItem.igFollowers),
+                igViews: valToString(editingItem.igViews),
+                igPosts: valToString(editingItem.igPosts),
+                igLikes: valToString(editingItem.igLikes),
+                tiktokFollowers: valToString(editingItem.tiktokFollowers),
+                tiktokViews: valToString(editingItem.tiktokViews),
+                tiktokPosts: valToString(editingItem.tiktokPosts),
+                tiktokLikes: valToString(editingItem.tiktokLikes),
+                totalCustomers: valToString(editingItem.totalCustomers),
+                websiteVisitors: valToString(editingItem.websiteVisitors),
+                websiteViews: valToString(editingItem.websiteViews),
+                activeOrders: valToString(editingItem.activeOrders),
+                testimonials: valToString(editingItem.testimonials),
+                totalRevenue: valToString(editingItem.totalRevenue),
                 notes: editingItem.notes || "",
             });
         } else {
             setForm({
                 recordedAt: new Date().toISOString().split("T")[0],
                 igFollowers: "",
+                igViews: "",
+                igPosts: "",
+                igLikes: "",
                 tiktokFollowers: "",
+                tiktokViews: "",
+                tiktokPosts: "",
+                tiktokLikes: "",
                 totalCustomers: "",
                 websiteVisitors: "",
+                websiteViews: "",
                 activeOrders: "",
                 testimonials: "",
                 totalRevenue: "",
@@ -90,9 +122,16 @@ export default function GrowthForm({ isOpen, onClose, onSuccess, editingItem }: 
                 body: JSON.stringify({
                     recordedAt: form.recordedAt,
                     igFollowers: form.igFollowers !== "" ? Number(form.igFollowers) : null,
+                    igViews: form.igViews !== "" ? Number(form.igViews) : null,
+                    igPosts: form.igPosts !== "" ? Number(form.igPosts) : null,
+                    igLikes: form.igLikes !== "" ? Number(form.igLikes) : null,
                     tiktokFollowers: form.tiktokFollowers !== "" ? Number(form.tiktokFollowers) : null,
+                    tiktokViews: form.tiktokViews !== "" ? Number(form.tiktokViews) : null,
+                    tiktokPosts: form.tiktokPosts !== "" ? Number(form.tiktokPosts) : null,
+                    tiktokLikes: form.tiktokLikes !== "" ? Number(form.tiktokLikes) : null,
                     totalCustomers: form.totalCustomers !== "" ? Number(form.totalCustomers) : null,
                     websiteVisitors: form.websiteVisitors !== "" ? Number(form.websiteVisitors) : null,
+                    websiteViews: form.websiteViews !== "" ? Number(form.websiteViews) : null,
                     activeOrders: form.activeOrders !== "" ? Number(form.activeOrders) : null,
                     testimonials: form.testimonials !== "" ? Number(form.testimonials) : null,
                     totalRevenue: form.totalRevenue !== "" ? Number(form.totalRevenue) : null,
@@ -164,7 +203,7 @@ export default function GrowthForm({ isOpen, onClose, onSuccess, editingItem }: 
                 )}
 
                 {/* Form */}
-                <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-4">
+                <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-5">
                     <div>
                         <label className="block text-sm font-semibold text-gray-400 mb-1.5">Tanggal Pencatatan *</label>
                         <input
@@ -180,89 +219,185 @@ export default function GrowthForm({ isOpen, onClose, onSuccess, editingItem }: 
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Followers Instagram</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.igFollowers}
-                                onChange={(e) => setForm({ ...form, igFollowers: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Contoh: 15200"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Followers TikTok</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.tiktokFollowers}
-                                onChange={(e) => setForm({ ...form, tiktokFollowers: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Contoh: 24500"
-                            />
+                    {/* Instagram Group */}
+                    <div className="border border-white/5 bg-white/5 p-4 rounded-2xl space-y-4">
+                        <h4 className="text-sm font-bold text-pink-500 uppercase tracking-wider">Instagram Metrics</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Followers</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.igFollowers}
+                                    onChange={(e) => setForm({ ...form, igFollowers: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="e.g. 15200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Views</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.igViews}
+                                    onChange={(e) => setForm({ ...form, igViews: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Views video/reels"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Postingan</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.igPosts}
+                                    onChange={(e) => setForm({ ...form, igPosts: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Jumlah postingan"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Likes</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.igLikes}
+                                    onChange={(e) => setForm({ ...form, igLikes: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Total likes"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Total Customers</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.totalCustomers}
-                                onChange={(e) => setForm({ ...form, totalCustomers: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Jumlah total orderan unik"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Pengunjung Website</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.websiteVisitors}
-                                onChange={(e) => setForm({ ...form, websiteVisitors: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Traffic pengunjung"
-                            />
+                    {/* TikTok Group */}
+                    <div className="border border-white/5 bg-white/5 p-4 rounded-2xl space-y-4">
+                        <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">TikTok Metrics</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Followers</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.tiktokFollowers}
+                                    onChange={(e) => setForm({ ...form, tiktokFollowers: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="e.g. 24500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Views</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.tiktokViews}
+                                    onChange={(e) => setForm({ ...form, tiktokViews: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Views video"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Postingan</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.tiktokPosts}
+                                    onChange={(e) => setForm({ ...form, tiktokPosts: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Jumlah postingan"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Likes</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.tiktokLikes}
+                                    onChange={(e) => setForm({ ...form, tiktokLikes: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Total likes"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Order Aktif</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.activeOrders}
-                                onChange={(e) => setForm({ ...form, activeOrders: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Sedang berjalan"
-                            />
+                    {/* Website Group */}
+                    <div className="border border-white/5 bg-white/5 p-4 rounded-2xl space-y-4">
+                        <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Website Metrics</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Pengunjung (Viewer)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.websiteVisitors}
+                                    onChange={(e) => setForm({ ...form, websiteVisitors: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Traffic pengunjung"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Views</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.websiteViews}
+                                    onChange={(e) => setForm({ ...form, websiteViews: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Views halaman"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Jumlah Testimoni</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.testimonials}
-                                onChange={(e) => setForm({ ...form, testimonials: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Total ulasan"
-                            />
-                        </div>
-                        <div className="sm:col-span-1">
-                            <label className="block text-sm font-semibold text-gray-400 mb-1.5">Omzet (Rp)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.totalRevenue}
-                                onChange={(e) => setForm({ ...form, totalRevenue: e.target.value })}
-                                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                                placeholder="Total Omzet"
-                            />
+                    </div>
+
+                    {/* Sales Group */}
+                    <div className="border border-white/5 bg-white/5 p-4 rounded-2xl space-y-4">
+                        <h4 className="text-sm font-bold text-red-500 uppercase tracking-wider">Penjualan & Finansial</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Total Customers</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.totalCustomers}
+                                    onChange={(e) => setForm({ ...form, totalCustomers: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="e.g. 120"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Order Aktif</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.activeOrders}
+                                    onChange={(e) => setForm({ ...form, activeOrders: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Sedang berjalan"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Jumlah Testimoni</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.testimonials}
+                                    onChange={(e) => setForm({ ...form, testimonials: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Total ulasan"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 mb-1">Omzet (Rp)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.totalRevenue}
+                                    onChange={(e) => setForm({ ...form, totalRevenue: e.target.value })}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                                    placeholder="Total Omzet"
+                                />
+                            </div>
                         </div>
                     </div>
 

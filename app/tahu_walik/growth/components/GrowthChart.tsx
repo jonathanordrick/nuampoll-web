@@ -10,34 +10,55 @@ interface MetricConfig {
     key: keyof Omit<GrowthMetric, "id" | "recordedAt" | "notes">;
     label: string;
     color: string;
-    isRevenue?: boolean;
+    isRightAxis?: boolean;
 }
 
-const METRICS: MetricConfig[] = [
-    { key: "igFollowers", label: "Followers IG", color: "#E1306C" },
-    { key: "tiktokFollowers", label: "Followers TikTok", color: "#06B6D4" }, // Cyan-600
-    { key: "totalCustomers", label: "Total Customer", color: "#3B82F6" }, // Blue-500
-    { key: "websiteVisitors", label: "Pengunjung Website", color: "#10B981" }, // Green-500
-    { key: "activeOrders", label: "Order Aktif", color: "#F59E0B" }, // Yellow-500
-    { key: "testimonials", label: "Testimoni", color: "#8B5CF6" }, // Purple-500
-    { key: "totalRevenue", label: "Total Omzet (Rp)", color: "#EF4444", isRevenue: true }, // Red-500
+const IG_METRICS: MetricConfig[] = [
+    { key: "igFollowers", label: "Followers", color: "#833AB4" },
+    { key: "igViews", label: "Views (Kanan)", color: "#E1306C", isRightAxis: true },
+    { key: "igPosts", label: "Postingan", color: "#F77737" },
+    { key: "igLikes", label: "Likes", color: "#FCAF45" },
 ];
 
-export default function GrowthChart({ data }: GrowthChartProps) {
-    // State to toggle visibility of each metric
-    const [activeMetrics, setActiveMetrics] = useState<string[]>(
-        METRICS.map((m) => m.key)
-    );
+const TIKTOK_METRICS: MetricConfig[] = [
+    { key: "tiktokFollowers", label: "Followers", color: "#A855F7" },
+    { key: "tiktokViews", label: "Views (Kanan)", color: "#EE1D52", isRightAxis: true },
+    { key: "tiktokPosts", label: "Postingan", color: "#06B6D4" },
+    { key: "tiktokLikes", label: "Likes", color: "#111827" },
+];
 
-    // Hover state for tooltip & hover lines
+const WEBSITE_METRICS: MetricConfig[] = [
+    { key: "websiteVisitors", label: "Viewer", color: "#10B981" },
+    { key: "websiteViews", label: "Views", color: "#3B82F6" },
+];
+
+const SALES_METRICS: MetricConfig[] = [
+    { key: "totalCustomers", label: "Customer", color: "#3B82F6" },
+    { key: "activeOrders", label: "Order Aktif", color: "#F59E0B" },
+    { key: "testimonials", label: "Testimoni", color: "#8B5CF6" },
+    { key: "totalRevenue", label: "Omzet (Kanan)", color: "#EF4444", isRightAxis: true },
+];
+
+function SubBarChart({
+    title,
+    data,
+    metrics,
+    dualAxis = false,
+}: {
+    title: string;
+    data: GrowthMetric[];
+    metrics: MetricConfig[];
+    dualAxis?: boolean;
+}) {
+    const [activeMetrics, setActiveMetrics] = useState<string[]>(
+        metrics.map((m) => m.key)
+    );
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
     const svgRef = useRef<SVGSVGElement | null>(null);
 
-    // Toggle active metrics
     const toggleMetric = (key: string) => {
         if (activeMetrics.includes(key)) {
-            // Keep at least one metric active
             if (activeMetrics.length > 1) {
                 setActiveMetrics(activeMetrics.filter((m) => m !== key));
             }
@@ -46,79 +67,76 @@ export default function GrowthChart({ data }: GrowthChartProps) {
         }
     };
 
-    if (data.length === 0) {
-        return (
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl text-center py-20">
-                <p className="text-gray-400 font-bold">Belum ada data untuk digambar dalam chart.</p>
-            </div>
-        );
-    }
+    const rightAxisMetric = metrics.find((m) => m.isRightAxis);
+    const rightAxisKey = rightAxisMetric?.key;
 
-    // Chart dimensions inside SVG viewbox
-    const svgWidth = 850;
-    const svgHeight = 400;
-    const paddingLeft = 70;
-    const paddingRight = 90;
-    const paddingTop = 30;
-    const paddingBottom = 50;
+    // Dimension config
+    const svgWidth = 550;
+    const svgHeight = 280;
+    const paddingLeft = 55;
+    const paddingRight = dualAxis && rightAxisKey && activeMetrics.includes(rightAxisKey as string) ? 65 : 20;
+    const paddingTop = 20;
+    const paddingBottom = 40;
 
     const chartWidth = svgWidth - paddingLeft - paddingRight;
     const chartHeight = svgHeight - paddingTop - paddingBottom;
+    const colWidth = chartWidth / Math.max(1, data.length);
 
-    // Calculate maximum values for scaling
-    // 1. Shared Left Y-Axis metrics max
-    let maxShared = 10;
-    METRICS.filter((m) => !m.isRevenue && activeMetrics.includes(m.key)).forEach((m) => {
-        data.forEach((d) => {
-            const val = d[m.key] as number | null;
-            if (val !== null && val > maxShared) maxShared = val;
-        });
-    });
-    // Add 10% padding to maxShared
-    maxShared = Math.ceil(maxShared * 1.1);
-
-    // 2. Right Y-Axis revenue metric max
-    let maxRevenue = 100000;
-    if (activeMetrics.includes("totalRevenue")) {
-        data.forEach((d) => {
-            const val = d.totalRevenue;
-            if (val !== null && val > maxRevenue) maxRevenue = val;
-        });
-    }
-    // Add 10% padding to maxRevenue
-    maxRevenue = Math.ceil(maxRevenue * 1.1);
-
-    // Get coordinates for a data point
-    const getCoordinates = (index: number, value: number, isRevenue: boolean) => {
-        const x = paddingLeft + (index / Math.max(1, data.length - 1)) * chartWidth;
-        const maxVal = isRevenue ? maxRevenue : maxShared;
-        const y = svgHeight - paddingBottom - (value / maxVal) * chartHeight;
-        return { x, y };
+    // Safe parsing helper
+    const isValidVal = (val: any): boolean => {
+        return val !== null && val !== undefined && val !== "" && !isNaN(Number(val));
     };
 
-    // Handle hover / mouse move inside SVG
+    // 1. Shared Left Y-Axis metrics max
+    let maxShared = 10;
+    metrics
+        .filter((m) => !m.isRightAxis && activeMetrics.includes(m.key))
+        .forEach((m) => {
+            data.forEach((d) => {
+                const val = d[m.key];
+                if (isValidVal(val)) {
+                    const numVal = Number(val);
+                    if (numVal > maxShared) maxShared = numVal;
+                }
+            });
+        });
+    maxShared = Math.ceil(maxShared * 1.1);
+
+    // 2. Right Y-Axis metric max
+    let maxRight = 10;
+    if (dualAxis && rightAxisKey && activeMetrics.includes(rightAxisKey)) {
+        data.forEach((d) => {
+            const val = d[rightAxisKey];
+            if (isValidVal(val)) {
+                const numVal = Number(val);
+                if (numVal > maxRight) maxRight = numVal;
+            }
+        });
+    }
+    maxRight = Math.ceil(maxRight * 1.1);
+
     const handleMouseMove = (e: MouseEvent<SVGSVGElement>) => {
         if (!svgRef.current) return;
         const rect = svgRef.current.getBoundingClientRect();
         
-        // Calculate coordinates relative to SVG
         const scaleX = svgWidth / rect.width;
-        const scaleY = svgHeight / rect.height;
         const mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY;
+        const localX = mouseX - paddingLeft;
 
-        // Only track inside plotting area plus a small margin
-        if (mouseX >= paddingLeft - 20 && mouseX <= svgWidth - paddingRight + 20) {
-            // Find closest data index
-            const fraction = (mouseX - paddingLeft) / chartWidth;
-            let index = Math.round(fraction * (data.length - 1));
+        if (mouseX >= paddingLeft - 5 && mouseX <= svgWidth - paddingRight + 5) {
+            let index = Math.floor(localX / colWidth);
             index = Math.max(0, Math.min(data.length - 1, index));
             
             setHoveredIdx(index);
-            // Position tooltip near cursor
+            
+            const isRightHalf = index >= data.length / 2;
+            const tooltipX = isRightHalf
+                ? (e.clientX - rect.left - 225) // Show left of cursor (w-52 = 208px + margin)
+                : (e.clientX - rect.left + 15);  // Show right of cursor
+
             setTooltipPos({
-                x: e.clientX - rect.left + 15,
-                y: e.clientY - rect.top - 80,
+                x: tooltipX,
+                y: e.clientY - rect.top - 100,
             });
         } else {
             setHoveredIdx(null);
@@ -129,7 +147,6 @@ export default function GrowthChart({ data }: GrowthChartProps) {
         setHoveredIdx(null);
     };
 
-    // Formatting numbers helper
     const formatValue = (val: number, isRevenue?: boolean) => {
         if (isRevenue) {
             if (val >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(1)}M`;
@@ -137,42 +154,46 @@ export default function GrowthChart({ data }: GrowthChartProps) {
             if (val >= 1_000) return `${(val / 1_000).toFixed(0)}rb`;
             return `Rp ${val}`;
         }
-        if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-        if (val >= 1_000) return `${(val / 1_000).toFixed(1)}k`;
+        if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}jt`;
+        if (val >= 1_000) return `${(val / 1_000).toFixed(1)}rb`;
         return val.toString();
     };
 
-    // Gridlines (4 horizontal lines)
     const gridTicks = [0, 0.25, 0.5, 0.75, 1];
 
     return (
-        <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 flex flex-col justify-between select-none">
-            {/* Top Metric Filters (Pills) */}
-            <div className="flex flex-wrap gap-2 mb-6">
-                {METRICS.map((m) => {
-                    const isActive = activeMetrics.includes(m.key);
-                    return (
-                        <button
-                            key={m.key}
-                            onClick={() => toggleMetric(m.key)}
-                            style={{
-                                borderColor: isActive ? m.color : "transparent",
-                                backgroundColor: isActive ? `${m.color}15` : "#F3F4F6",
-                                color: isActive ? m.color : "#6B7280",
-                            }}
-                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-full border transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                        >
-                            <span
-                                className="w-2.5 h-2.5 rounded-full inline-block"
-                                style={{ backgroundColor: m.color }}
-                            />
-                            {m.label}
-                        </button>
-                    );
-                })}
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-md flex flex-col justify-between select-none relative">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <h4 className="text-sm font-extrabold text-gray-800 uppercase tracking-wide">
+                    {title}
+                </h4>
+                {/* Metric Filters */}
+                <div className="flex flex-wrap gap-1.5">
+                    {metrics.map((m) => {
+                        const isActive = activeMetrics.includes(m.key);
+                        return (
+                            <button
+                                key={m.key}
+                                onClick={() => toggleMetric(m.key)}
+                                style={{
+                                    borderColor: isActive ? m.color : "transparent",
+                                    backgroundColor: isActive ? `${m.color}12` : "#F3F4F6",
+                                    color: isActive ? m.color : "#6B7280",
+                                }}
+                                className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full border transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                            >
+                                <span
+                                    className="w-1.5 h-1.5 rounded-full inline-block"
+                                    style={{ backgroundColor: m.color }}
+                                />
+                                {m.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Line Chart Area */}
+            {/* SVG Plot */}
             <div className="relative w-full">
                 <svg
                     ref={svgRef}
@@ -181,14 +202,7 @@ export default function GrowthChart({ data }: GrowthChartProps) {
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* SVG Filters for soft drop shadow */}
-                    <defs>
-                        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-                            <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.15" />
-                        </filter>
-                    </defs>
-
-                    {/* Horizontal Gridlines */}
+                    {/* Gridlines */}
                     {gridTicks.map((tick, idx) => {
                         const y = paddingTop + chartHeight * (1 - tick);
                         return (
@@ -198,174 +212,143 @@ export default function GrowthChart({ data }: GrowthChartProps) {
                                     y1={y}
                                     x2={svgWidth - paddingRight}
                                     y2={y}
-                                    stroke="#E5E7EB"
+                                    stroke="#F3F4F6"
                                     strokeWidth="1"
-                                    strokeDasharray={tick === 0 ? "none" : "4 4"}
                                 />
-                                {/* Left Axis Labels (Shared Metrics) */}
+                                {/* Left axis values */}
                                 <text
-                                    x={paddingLeft - 10}
-                                    y={y + 4}
+                                    x={paddingLeft - 8}
+                                    y={y + 3}
                                     textAnchor="end"
                                     fill="#9CA3AF"
-                                    className="text-[10px] font-bold"
+                                    className="text-[9px] font-bold"
                                 >
                                     {formatValue(maxShared * tick, false)}
                                 </text>
-                                {/* Right Axis Labels (Omzet/Revenue) */}
-                                {activeMetrics.includes("totalRevenue") && (
+                                {/* Right axis values */}
+                                {dualAxis && rightAxisKey && activeMetrics.includes(rightAxisKey) && (
                                     <text
-                                        x={svgWidth - paddingRight + 12}
-                                        y={y + 4}
+                                        x={svgWidth - paddingRight + 8}
+                                        y={y + 3}
                                         textAnchor="start"
-                                        fill="#EF4444"
-                                        className="text-[10px] font-bold"
+                                        fill={rightAxisMetric?.color || "#EF4444"}
+                                        className="text-[9px] font-bold"
                                     >
-                                        {formatValue(maxRevenue * tick, true)}
+                                        {formatValue(maxRight * tick, rightAxisMetric?.key === "totalRevenue")}
                                     </text>
                                 )}
                             </g>
                         );
                     })}
 
-                    {/* Vertical X Axis Line */}
+                    {/* Bottom axis line */}
                     <line
                         x1={paddingLeft}
                         y1={svgHeight - paddingBottom}
                         x2={svgWidth - paddingRight}
                         y2={svgHeight - paddingBottom}
-                        stroke="#D1D5DB"
-                        strokeWidth="1.5"
+                        stroke="#E5E7EB"
+                        strokeWidth="1"
                     />
 
-                    {/* X Axis Labels (Dates) */}
+                    {/* X Axis labels (centered on columns) */}
                     {data.map((d, idx) => {
-                        // Display 6 labels maximum to avoid overlap
-                        const interval = Math.max(1, Math.ceil(data.length / 6));
+                        const interval = Math.max(1, Math.ceil(data.length / 5));
                         if (idx % interval !== 0 && idx !== data.length - 1) return null;
 
                         const date = new Date(d.recordedAt);
                         const label = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-                        const pos = getCoordinates(idx, 0, false);
+                        const x = paddingLeft + (idx + 0.5) * colWidth;
 
                         return (
                             <text
                                 key={idx}
-                                x={pos.x}
-                                y={svgHeight - paddingBottom + 20}
+                                x={x}
+                                y={svgHeight - paddingBottom + 16}
                                 textAnchor="middle"
                                 fill="#9CA3AF"
-                                className="text-[10px] font-bold"
+                                className="text-[9px] font-bold"
                             >
                                 {label}
                             </text>
                         );
                     })}
 
-                    {/* Plot Lines */}
-                    {METRICS.map((m) => {
-                        if (!activeMetrics.includes(m.key)) return null;
-
-                        // Create SVG path string
-                        const points = data
-                            .map((d, idx) => {
-                                const val = d[m.key] as number | null;
-                                if (val === null) return null;
-                                return { idx, val };
-                            })
-                            .filter((item): item is { idx: number; val: number } => item !== null);
-
-                        if (points.length < 2) return null;
-
-                        const pathD = points
-                            .map((p, i) => {
-                                const { x, y } = getCoordinates(p.idx, p.val, m.isRevenue || false);
-                                return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-                            })
-                            .join(" ");
-
-                        return (
-                            <path
-                                key={m.key}
-                                d={pathD}
-                                fill="none"
-                                stroke={m.color}
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="transition-all duration-300"
-                                style={{ filter: "url(#shadow)" }}
-                            />
-                        );
-                    })}
-
-                    {/* Hover Vertical Guide Line */}
+                    {/* Hover Column Highlight background */}
                     {hoveredIdx !== null && (
-                        <line
-                            x1={getCoordinates(hoveredIdx, 0, false).x}
-                            y1={paddingTop}
-                            x2={getCoordinates(hoveredIdx, 0, false).x}
-                            y2={svgHeight - paddingBottom}
-                            stroke="#6B7280"
-                            strokeWidth="1.5"
-                            strokeDasharray="4 4"
+                        <rect
+                            x={paddingLeft + hoveredIdx * colWidth}
+                            y={paddingTop}
+                            width={colWidth}
+                            height={chartHeight}
+                            fill="#F3F4F6"
+                            fillOpacity="0.4"
+                            rx={4}
                         />
                     )}
 
-                    {/* Hover circles / points */}
-                    {hoveredIdx !== null &&
-                        METRICS.map((m) => {
-                            if (!activeMetrics.includes(m.key)) return null;
-                            const val = data[hoveredIdx][m.key] as number | null;
-                            if (val === null) return null;
+                    {/* Draw Grouped Bars */}
+                    {data.map((d, idx) => {
+                        const activeAndNonNull = metrics.filter(m => {
+                            const isMetricActive = activeMetrics.includes(m.key);
+                            const val = d[m.key];
+                            return isMetricActive && isValidVal(val);
+                        });
 
-                            const { x, y } = getCoordinates(hoveredIdx, val, m.isRevenue || false);
+                        const activeCount = activeAndNonNull.length;
+                        if (activeCount === 0) return null;
+
+                        const groupPadding = colWidth * 0.15;
+                        const availableWidth = colWidth - (2 * groupPadding);
+                        const gapBetweenBars = 1;
+                        const barWidth = Math.max(1.5, (availableWidth - (gapBetweenBars * (activeCount - 1))) / activeCount);
+
+                        return activeAndNonNull.map((m, barIdx) => {
+                            const val = d[m.key];
+                            if (!isValidVal(val)) return null;
+
+                            const maxVal = Math.max(1, m.isRightAxis ? maxRight : maxShared);
+                            const barHeight = (Number(val) / maxVal) * chartHeight;
+                            
+                            const x = paddingLeft + idx * colWidth + groupPadding + barIdx * (barWidth + gapBetweenBars);
+                            const y = svgHeight - paddingBottom - barHeight;
+
                             return (
-                                <g key={m.key}>
-                                    {/* Inner glowing circle */}
-                                    <circle
-                                        cx={x}
-                                        cy={y}
-                                        r="7"
-                                        fill={m.color}
-                                        stroke="white"
-                                        strokeWidth="2"
-                                        className="transition-all duration-150 shadow"
-                                    />
-                                    {/* Outer pulsing glow */}
-                                    <circle
-                                        cx={x}
-                                        cy={y}
-                                        r="12"
-                                        fill={m.color}
-                                        fillOpacity="0.25"
-                                        className="animate-pulse"
-                                    />
-                                </g>
+                                <rect
+                                    key={`${idx}-${m.key}`}
+                                    x={x}
+                                    y={y}
+                                    width={barWidth}
+                                    height={Math.max(1, barHeight)}
+                                    fill={m.color}
+                                    rx={1}
+                                    className="transition-all duration-300 hover:opacity-85"
+                                />
                             );
-                        })}
+                        });
+                    })}
                 </svg>
 
-                {/* HTML Float Tooltip */}
+                {/* Independent Tooltip */}
                 {hoveredIdx !== null && (
                     <div
                         style={{
                             left: `${tooltipPos.x}px`,
                             top: `${tooltipPos.y}px`,
                         }}
-                        className="absolute bg-gray-900/95 text-white p-3.5 rounded-2xl shadow-2xl border border-white/10 text-xs w-64 pointer-events-none z-20 backdrop-blur-md transition-all duration-75"
+                        className="absolute bg-gray-900/95 text-white p-3 rounded-2xl shadow-xl border border-white/10 text-[10px] w-52 pointer-events-none z-20 backdrop-blur-sm transition-all duration-75"
                     >
-                        <p className="font-bold border-b border-white/10 pb-1.5 mb-2 text-gray-300 text-left">
+                        <p className="font-bold border-b border-white/10 pb-1 mb-1.5 text-gray-300">
                             {new Date(data[hoveredIdx].recordedAt).toLocaleDateString("id-ID", {
                                 day: "numeric",
                                 month: "long",
                                 year: "numeric",
                             })}
                         </p>
-                        <div className="space-y-1.5">
-                            {METRICS.map((m) => {
+                        <div className="space-y-1">
+                            {metrics.map((m) => {
                                 const val = data[hoveredIdx][m.key] as number | null;
-                                if (val === null) return null;
+                                if (!isValidVal(val)) return null;
                                 const isSelected = activeMetrics.includes(m.key);
                                 return (
                                     <div
@@ -374,17 +357,17 @@ export default function GrowthChart({ data }: GrowthChartProps) {
                                             isSelected ? "opacity-100 font-bold" : "opacity-40"
                                         }`}
                                     >
-                                        <span className="flex items-center gap-1.5 text-gray-400">
+                                        <span className="flex items-center gap-1 text-gray-400">
                                             <span
-                                                className="w-2 h-2 rounded-full"
+                                                className="w-1.5 h-1.5 rounded-full"
                                                 style={{ backgroundColor: m.color }}
                                             />
                                             {m.label}
                                         </span>
                                         <span style={{ color: isSelected ? m.color : "#FFF" }}>
-                                            {m.isRevenue
-                                                ? `Rp ${new Intl.NumberFormat("id-ID").format(val)}`
-                                                : new Intl.NumberFormat("id-ID").format(val)}
+                                            {m.isRightAxis && m.key === "totalRevenue"
+                                                ? `Rp ${new Intl.NumberFormat("id-ID").format(Number(val))}`
+                                                : new Intl.NumberFormat("id-ID").format(Number(val))}
                                         </span>
                                     </div>
                                 );
@@ -393,6 +376,44 @@ export default function GrowthChart({ data }: GrowthChartProps) {
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+export default function GrowthChart({ data }: GrowthChartProps) {
+    if (data.length === 0) {
+        return (
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl text-center py-20">
+                <p className="text-gray-400 font-bold">Belum ada data untuk digambar dalam chart.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SubBarChart
+                title="Instagram Growth"
+                data={data}
+                metrics={IG_METRICS}
+                dualAxis={true}
+            />
+            <SubBarChart
+                title="TikTok Growth"
+                data={data}
+                metrics={TIKTOK_METRICS}
+                dualAxis={true}
+            />
+            <SubBarChart
+                title="Website Performance"
+                data={data}
+                metrics={WEBSITE_METRICS}
+            />
+            <SubBarChart
+                title="Penjualan & Finansial"
+                data={data}
+                metrics={SALES_METRICS}
+                dualAxis={true}
+            />
         </div>
     );
 }

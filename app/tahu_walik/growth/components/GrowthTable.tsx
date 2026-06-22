@@ -13,6 +13,7 @@ interface GrowthTableProps {
 export default function GrowthTable({ items, loading, onEdit, onDelete }: GrowthTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [activeTab, setActiveTab] = useState<"summary" | "instagram" | "tiktok" | "sales">("summary");
 
     // Sort items by date DESC (newest first) for table display
     const sortedItems = [...items].sort(
@@ -45,20 +46,79 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
         setCurrentPage(pageNumber);
     };
 
+    const colSpan = activeTab === "sales" ? 9 : 7;
+
     return (
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
+            {/* Tabs Control */}
+            <div className="flex flex-wrap bg-gray-50 border-b border-gray-100 p-3 gap-2">
+                {[
+                    { id: "summary", label: "Ringkasan" },
+                    { id: "instagram", label: "Instagram" },
+                    { id: "tiktok", label: "TikTok" },
+                    { id: "sales", label: "Web & Penjualan" }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => {
+                            setActiveTab(tab.id as any);
+                            setCurrentPage(1); // reset page on tab switch
+                        }}
+                        className={`px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                            activeTab === tab.id
+                                ? "bg-[#111] text-white shadow-sm"
+                                : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-100">
                             <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers IG</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers TikTok</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Total Cust.</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Visitor Web</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Order Aktif</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Testimoni</th>
-                            <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Omzet</th>
+                            
+                            {activeTab === "summary" && (
+                                <>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers IG</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers TikTok</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Visitor Web</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Omzet</th>
+                                </>
+                            )}
+
+                            {activeTab === "instagram" && (
+                                <>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers IG</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Views IG</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Postingan IG</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Likes IG</th>
+                                </>
+                            )}
+
+                            {activeTab === "tiktok" && (
+                                <>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Followers TikTok</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Views TikTok</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Postingan TikTok</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Likes TikTok</th>
+                                </>
+                            )}
+
+                            {activeTab === "sales" && (
+                                <>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Visitor Web</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Views Web</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Total Cust.</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Order Aktif</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Testimoni</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Omzet</th>
+                                </>
+                            )}
+
                             <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
                             <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                         </tr>
@@ -66,13 +126,13 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
                             <tr>
-                                <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={colSpan} className="px-6 py-12 text-center text-gray-500">
                                     Memuat data pertumbuhan...
                                 </td>
                             </tr>
                         ) : currentItems.length === 0 ? (
                             <tr>
-                                <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={colSpan} className="px-6 py-12 text-center text-gray-500">
                                     Belum ada data pertumbuhan dicatat.
                                 </td>
                             </tr>
@@ -86,29 +146,83 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
                                             year: "numeric",
                                         })}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        {formatNumber(item.igFollowers)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        {formatNumber(item.tiktokFollowers)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        {formatNumber(item.totalCustomers)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        {formatNumber(item.websiteVisitors)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        <span className={item.activeOrders && item.activeOrders > 0 ? "text-amber-600 font-bold" : "text-gray-400"}>
-                                            {formatNumber(item.activeOrders)}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                        {formatNumber(item.testimonials)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-black">
-                                        {formatIDR(item.totalRevenue)}
-                                    </td>
+
+                                    {activeTab === "summary" && (
+                                        <>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.igFollowers)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.tiktokFollowers)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.websiteVisitors)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-black">
+                                                {formatIDR(item.totalRevenue)}
+                                            </td>
+                                        </>
+                                    )}
+
+                                    {activeTab === "instagram" && (
+                                        <>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.igFollowers)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.igViews)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.igPosts)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.igLikes)}
+                                            </td>
+                                        </>
+                                    )}
+
+                                    {activeTab === "tiktok" && (
+                                        <>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.tiktokFollowers)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.tiktokViews)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.tiktokPosts)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.tiktokLikes)}
+                                            </td>
+                                        </>
+                                    )}
+
+                                    {activeTab === "sales" && (
+                                        <>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.websiteVisitors)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.websiteViews)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.totalCustomers)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                <span className={item.activeOrders && item.activeOrders > 0 ? "text-amber-600 font-bold" : "text-gray-400"}>
+                                                    {formatNumber(item.activeOrders)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
+                                                {formatNumber(item.testimonials)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-black">
+                                                {formatIDR(item.totalRevenue)}
+                                            </td>
+                                        </>
+                                    )}
+
                                     <td className="px-6 py-4 text-xs text-gray-500 max-w-xs truncate" title={item.notes || ""}>
                                         {item.notes || "-"}
                                     </td>

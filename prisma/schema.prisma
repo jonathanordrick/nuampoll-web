@@ -37,9 +37,16 @@ model GrowthMetric {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   recordedAt      DateTime @unique @map("recorded_at") @db.Date
   igFollowers     Int?     @map("ig_followers")
+  igViews         Int?     @map("ig_views")
+  igPosts         Int?     @map("ig_posts")
+  igLikes         Int?     @map("ig_likes")
   tiktokFollowers Int?     @map("tiktok_followers")
+  tiktokViews     Int?     @map("tiktok_views")
+  tiktokPosts     Int?     @map("tiktok_posts")
+  tiktokLikes     Int?     @map("tiktok_likes")
   totalCustomers  Int?     @map("total_customers")
   websiteVisitors Int?     @map("website_visitors")
+  websiteViews    Int?     @map("website_views")
   activeOrders    Int?     @map("active_orders")
   testimonials    Int?     @map("testimonials")
   totalRevenue    BigInt?  @map("total_revenue")
