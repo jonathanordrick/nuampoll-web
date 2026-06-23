@@ -24,7 +24,7 @@ const TIKTOK_METRICS: MetricConfig[] = [
     { key: "tiktokFollowers", label: "Followers", color: "#A855F7" },
     { key: "tiktokViews", label: "Views (Kanan)", color: "#EE1D52", isRightAxis: true },
     { key: "tiktokPosts", label: "Postingan", color: "#06B6D4" },
-    { key: "tiktokLikes", label: "Likes", color: "#111827" },
+    { key: "tiktokLikes", label: "Likes", color: "#F59E0B" },
 ];
 
 const WEBSITE_METRICS: MetricConfig[] = [
@@ -55,6 +55,7 @@ function SubBarChart({
     );
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+    const [hoveredLineKey, setHoveredLineKey] = useState<string | null>(null);
     const svgRef = useRef<SVGSVGElement | null>(null);
 
     const toggleMetric = (key: string) => {
@@ -287,7 +288,7 @@ function SubBarChart({
                         />
                     )}
 
-                    {/* Draw Grouped Bars */}
+                    {/* Draw Grouped Bars (Background volume visualization) */}
                     {data.map((d, idx) => {
                         const activeAndNonNull = metrics.filter(m => {
                             const isMetricActive = activeMetrics.includes(m.key);
@@ -321,12 +322,103 @@ function SubBarChart({
                                     width={barWidth}
                                     height={Math.max(1, barHeight)}
                                     fill={m.color}
-                                    rx={1}
-                                    className="transition-all duration-300 hover:opacity-85"
+                                    rx={1.5}
+                                    className="transition-all duration-300 hover:opacity-80"
                                 />
                             );
                         });
                     })}
+
+                    {/* Draw Trend Lines & Markers (Foreground growth trend visualization) */}
+                    {metrics
+                        .filter((m) => activeMetrics.includes(m.key))
+                        .map((m) => {
+                            const points: { x: number; y: number }[] = [];
+                            
+                            data.forEach((d, idx) => {
+                                const val = d[m.key];
+                                if (isValidVal(val)) {
+                                    // Find all active and non-null metrics for this specific entry to determine visual offset
+                                    const activeAndNonNull = metrics.filter(m2 => activeMetrics.includes(m2.key) && isValidVal(d[m2.key]));
+                                    const activeCount = activeAndNonNull.length;
+                                    const barIdx = activeAndNonNull.findIndex(m2 => m2.key === m.key);
+
+                                    let x = paddingLeft + (idx + 0.5) * colWidth; // Fallback to group center
+                                    
+                                    if (barIdx !== -1 && activeCount > 0) {
+                                        const groupPadding = colWidth * 0.15;
+                                        const availableWidth = colWidth - (2 * groupPadding);
+                                        const gapBetweenBars = 1;
+                                        const barWidth = Math.max(1.5, (availableWidth - (gapBetweenBars * (activeCount - 1))) / activeCount);
+                                        const barX = paddingLeft + idx * colWidth + groupPadding + barIdx * (barWidth + gapBetweenBars);
+                                        x = barX + barWidth / 2;
+                                    }
+
+                                    const maxVal = Math.max(1, m.isRightAxis ? maxRight : maxShared);
+                                    const y = svgHeight - paddingBottom - (Number(val) / maxVal) * chartHeight;
+                                    points.push({ x, y });
+                                }
+                            });
+
+                            if (points.length === 0) return null;
+
+                            // Construct path 'd' attribute
+                            const pathD = points
+                                .map((pt, pIdx) => `${pIdx === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
+                                .join(" ");
+
+                            const isHovered = hoveredLineKey === m.key;
+
+                            return (
+                                <g 
+                                    key={`line-${m.key}`}
+                                    onMouseEnter={() => setHoveredLineKey(m.key)}
+                                    onMouseLeave={() => setHoveredLineKey(null)}
+                                    className="cursor-pointer"
+                                >
+                                    {/* Line Shadow / Glow */}
+                                    {isHovered && points.length > 1 && (
+                                        <path
+                                            d={pathD}
+                                            fill="none"
+                                            stroke={m.color}
+                                            strokeWidth="7"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            opacity="0.18"
+                                            className="transition-all duration-300"
+                                        />
+                                    )}
+                                    {/* Main Trend Line */}
+                                    {points.length > 1 && (
+                                        <path
+                                            d={pathD}
+                                            fill="none"
+                                            stroke={m.color}
+                                            strokeWidth={isHovered ? "3.5" : "1.5"}
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            opacity={isHovered ? "1.0" : "0.45"}
+                                            className="transition-all duration-200"
+                                        />
+                                    )}
+                                    {/* Data Point Markers */}
+                                    {points.map((pt, pIdx) => (
+                                        <circle
+                                            key={`marker-${m.key}-${pIdx}`}
+                                            cx={pt.x}
+                                            cy={pt.y}
+                                            r={isHovered ? "5" : "3.2"}
+                                            fill="#FFFFFF"
+                                            stroke={m.color}
+                                            strokeWidth={isHovered ? "3" : "1.8"}
+                                            style={{ transformOrigin: `${pt.x}px ${pt.y}px` }}
+                                            className="transition-all duration-200 cursor-pointer"
+                                        />
+                                    ))}
+                                </g>
+                            );
+                        })}
                 </svg>
 
                 {/* Independent Tooltip */}
@@ -346,15 +438,33 @@ function SubBarChart({
                             })}
                         </p>
                         <div className="space-y-1">
-                            {metrics.map((m) => {
+                             {metrics.map((m) => {
                                 const val = data[hoveredIdx][m.key] as number | null;
                                 if (!isValidVal(val)) return null;
                                 const isSelected = activeMetrics.includes(m.key);
+
+                                // Calculate change from previous entry
+                                let changeText = "";
+                                let isPositive = true;
+                                if (hoveredIdx > 0) {
+                                    const prevVal = data[hoveredIdx - 1][m.key];
+                                    if (isValidVal(prevVal)) {
+                                        const diff = Number(val) - Number(prevVal);
+                                        const percent = Number(prevVal) !== 0 ? (diff / Number(prevVal)) * 100 : 0;
+                                        if (diff !== 0) {
+                                            isPositive = diff > 0;
+                                            changeText = `${isPositive ? "+" : ""}${percent.toFixed(1)}%`;
+                                        } else {
+                                            changeText = "0.0%";
+                                        }
+                                    }
+                                }
+
                                 return (
                                     <div
                                         key={m.key}
                                         className={`flex justify-between items-center ${
-                                            isSelected ? "opacity-100 font-bold" : "opacity-40"
+                                            isSelected ? "opacity-100" : "opacity-40"
                                         }`}
                                     >
                                         <span className="flex items-center gap-1 text-gray-400">
@@ -364,11 +474,18 @@ function SubBarChart({
                                             />
                                             {m.label}
                                         </span>
-                                        <span style={{ color: isSelected ? m.color : "#FFF" }}>
-                                            {m.isRightAxis && m.key === "totalRevenue"
-                                                ? `Rp ${new Intl.NumberFormat("id-ID").format(Number(val))}`
-                                                : new Intl.NumberFormat("id-ID").format(Number(val))}
-                                        </span>
+                                        <div className="flex flex-col items-end">
+                                            <span style={{ color: isSelected ? m.color : "#FFF" }} className="font-bold">
+                                                {m.isRightAxis && m.key === "totalRevenue"
+                                                    ? `Rp ${new Intl.NumberFormat("id-ID").format(Number(val))}`
+                                                    : new Intl.NumberFormat("id-ID").format(Number(val))}
+                                            </span>
+                                            {changeText && (
+                                                <span className={`text-[8px] font-black mt-0.5 ${changeText === "0.0%" ? "text-gray-400" : isPositive ? "text-green-400" : "text-red-400"}`}>
+                                                    {changeText === "0.0%" ? "=" : isPositive ? "▲" : "▼"} {changeText}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}

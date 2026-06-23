@@ -20,6 +20,50 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
         (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
     );
 
+    // Calculate growth changes chronologically (oldest to newest)
+    const calculateChanges = () => {
+        const chronoItems = [...items].sort(
+            (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
+        );
+
+        const changesMap = new Map<string, Record<string, { diff: number; percent: number; isPositive: boolean }>>();
+
+        chronoItems.forEach((item, idx) => {
+            if (idx === 0) return;
+            const prev = chronoItems[idx - 1];
+            const itemChanges: Record<string, { diff: number; percent: number; isPositive: boolean }> = {};
+
+            const keys: (keyof Omit<GrowthMetric, "id" | "recordedAt" | "notes">)[] = [
+                "igFollowers", "igViews", "igPosts", "igLikes",
+                "tiktokFollowers", "tiktokViews", "tiktokPosts", "tiktokLikes",
+                "totalCustomers", "websiteVisitors", "websiteViews", "activeOrders",
+                "testimonials", "totalRevenue"
+            ];
+
+            keys.forEach((key) => {
+                const currVal = item[key];
+                const prevVal = prev[key];
+                if (currVal !== null && prevVal !== null && prevVal !== undefined) {
+                    const currNum = Number(currVal);
+                    const prevNum = Number(prevVal);
+                    const diff = currNum - prevNum;
+                    const percent = prevNum !== 0 ? (diff / prevNum) * 100 : 0;
+                    itemChanges[key] = {
+                        diff,
+                        percent,
+                        isPositive: diff >= 0
+                    };
+                }
+            });
+
+            changesMap.set(item.id, itemChanges);
+        });
+
+        return changesMap;
+    };
+
+    const changesMap = calculateChanges();
+
     // Format IDR Currency
     const formatIDR = (value: number | null) => {
         if (value === null) return "-";
@@ -34,6 +78,32 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
     const formatNumber = (value: number | null) => {
         if (value === null) return "-";
         return new Intl.NumberFormat("id-ID").format(value);
+    };
+
+    // Render cell with raw value and growth percentage
+    const renderCellWithChange = (value: number | null, key: string, itemId: string, isCurrency = false) => {
+        if (value === null) return <span className="text-gray-400">-</span>;
+        const formatted = isCurrency ? formatIDR(value) : formatNumber(value);
+        const change = changesMap.get(itemId)?.[key];
+
+        return (
+            <div className="flex flex-col items-end justify-center">
+                <span className={isCurrency ? "text-red-600 font-black" : "text-gray-900 font-semibold"}>
+                    {formatted}
+                </span>
+                {change && change.diff !== 0 ? (
+                    <span className={`text-[10px] font-extrabold flex items-center gap-0.5 mt-0.5 ${change.isPositive ? "text-green-600" : "text-red-500"}`}>
+                        {change.isPositive ? "▲" : "▼"} {change.isPositive ? "+" : ""}{change.percent.toFixed(1)}%
+                    </span>
+                ) : change && change.diff === 0 ? (
+                    <span className="text-[10px] text-gray-400 font-bold mt-0.5">
+                        = 0%
+                    </span>
+                ) : (
+                    <span className="text-[10px] text-gray-300 font-semibold mt-0.5">-</span>
+                )}
+            </div>
+        );
     };
 
     // Pagination logic
@@ -149,76 +219,74 @@ export default function GrowthTable({ items, loading, onEdit, onDelete }: Growth
 
                                     {activeTab === "summary" && (
                                         <>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.igFollowers)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.igFollowers, "igFollowers", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.tiktokFollowers)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.tiktokFollowers, "tiktokFollowers", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.websiteVisitors)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.websiteVisitors, "websiteVisitors", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-black">
-                                                {formatIDR(item.totalRevenue)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.totalRevenue, "totalRevenue", item.id, true)}
                                             </td>
                                         </>
                                     )}
 
                                     {activeTab === "instagram" && (
                                         <>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.igFollowers)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.igFollowers, "igFollowers", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.igViews)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.igViews, "igViews", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.igPosts)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.igPosts, "igPosts", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.igLikes)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.igLikes, "igLikes", item.id)}
                                             </td>
                                         </>
                                     )}
 
                                     {activeTab === "tiktok" && (
                                         <>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.tiktokFollowers)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.tiktokFollowers, "tiktokFollowers", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.tiktokViews)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.tiktokViews, "tiktokViews", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.tiktokPosts)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.tiktokPosts, "tiktokPosts", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.tiktokLikes)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.tiktokLikes, "tiktokLikes", item.id)}
                                             </td>
                                         </>
                                     )}
 
                                     {activeTab === "sales" && (
                                         <>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.websiteVisitors)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.websiteVisitors, "websiteVisitors", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.websiteViews)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.websiteViews, "websiteViews", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.totalCustomers)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.totalCustomers, "totalCustomers", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                <span className={item.activeOrders && item.activeOrders > 0 ? "text-amber-600 font-bold" : "text-gray-400"}>
-                                                    {formatNumber(item.activeOrders)}
-                                                </span>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.activeOrders, "activeOrders", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">
-                                                {formatNumber(item.testimonials)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.testimonials, "testimonials", item.id)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-black">
-                                                {formatIDR(item.totalRevenue)}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                                {renderCellWithChange(item.totalRevenue, "totalRevenue", item.id, true)}
                                             </td>
                                         </>
                                     )}

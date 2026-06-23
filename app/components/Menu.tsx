@@ -6,7 +6,7 @@ import { FiSend, FiBook } from "react-icons/fi";
 export default function Menu() {
   const [showModal, setShowModal] = useState(false);
   const menus = [
-    { name: "Nuampoll Tomate", price: "10k", image: "/Gambar/nuampoll_tomate.jpg" }
+    { name: "Nuampoll Tomate", price: "15k", image: "/Gambar/nuampoll_tomate.jpg" }
   ];
 
   const handleMenuLainnya = () => {

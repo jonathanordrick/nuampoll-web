@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FiPlus, FiTrash2, FiTrendingUp } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiTrendingUp, FiGlobe, FiDollarSign, FiUsers, FiMessageSquare, FiShoppingBag, FiLayers, FiEye } from "react-icons/fi";
+import { FaInstagram, FaTiktok } from "react-icons/fa";
 import AdminNavbar from "../../components/AdminNavbar";
 import GrowthForm, { GrowthMetric } from "./GrowthForm";
 import GrowthTable from "./GrowthTable";
@@ -115,6 +116,86 @@ export default function GrowthDashboard() {
 
     const summaries = getSummaries();
 
+    // Convert numbers to Roman numerals
+    const toRoman = (num: number): string => {
+        const roman = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"];
+        return roman[num] || num.toString();
+    };
+
+    // Calculate maximum growth (highest positive surge) for key metrics
+    const getHighlights = () => {
+        if (metrics.length < 2) return [];
+
+        const keyMetrics: { key: keyof Omit<GrowthMetric, "id" | "recordedAt" | "notes">; label: string; unit: string; isCurrency?: boolean }[] = [
+            { key: "igFollowers", label: "Followers Instagram", unit: "followers" },
+            { key: "igViews", label: "Views Instagram", unit: "views" },
+            { key: "igPosts", label: "Postingan Instagram", unit: "posts" },
+            { key: "igLikes", label: "Likes Instagram", unit: "likes" },
+            { key: "tiktokFollowers", label: "Followers TikTok", unit: "followers" },
+            { key: "tiktokViews", label: "Views TikTok", unit: "views" },
+            { key: "tiktokPosts", label: "Postingan TikTok", unit: "posts" },
+            { key: "tiktokLikes", label: "Likes TikTok", unit: "likes" },
+            { key: "websiteVisitors", label: "Visitor Website", unit: "visitor" },
+            { key: "websiteViews", label: "Views Website", unit: "views" },
+            { key: "totalCustomers", label: "Total Customer", unit: "customers" },
+            { key: "activeOrders", label: "Order Aktif", unit: "orders" },
+            { key: "testimonials", label: "Testimoni", unit: "ulasan" },
+            { key: "totalRevenue", label: "Omzet", unit: "", isCurrency: true },
+        ];
+
+        const highlightsList: {
+            metricLabel: string;
+            entryIndex: number; // 1-based index
+            date: string;
+            diff: number;
+            percent: number;
+            isCurrency?: boolean;
+            unit: string;
+        }[] = [];
+
+        keyMetrics.forEach(({ key, label, unit, isCurrency }) => {
+            let maxDiff = -Infinity;
+            let bestEntryIndex = -1;
+            let bestEntryDate = "";
+            let bestPercent = 0;
+
+            for (let i = 1; i < metrics.length; i++) {
+                const prevVal = metrics[i - 1][key];
+                const currVal = metrics[i][key];
+
+                if (prevVal !== null && currVal !== null) {
+                    const diff = Number(currVal) - Number(prevVal);
+                    if (diff > maxDiff && diff > 0) { // must be a positive growth
+                        maxDiff = diff;
+                        bestEntryIndex = i + 1; // 1-based index (entry II, entry III, etc.)
+                        bestEntryDate = new Date(metrics[i].recordedAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        });
+                        bestPercent = prevVal !== 0 ? (diff / Number(prevVal)) * 100 : 0;
+                    }
+                }
+            }
+
+            if (bestEntryIndex !== -1) {
+                highlightsList.push({
+                    metricLabel: label,
+                    entryIndex: bestEntryIndex,
+                    date: bestEntryDate,
+                    diff: maxDiff,
+                    percent: bestPercent,
+                    isCurrency,
+                    unit
+                });
+            }
+        });
+
+        return highlightsList;
+    };
+
+    const highlights = getHighlights();
+
     if (loading) {
         return (
             <>
@@ -183,6 +264,81 @@ export default function GrowthDashboard() {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Growth Insights Summary Section */}
+                    {highlights.length > 0 && (
+                        <div className="bg-[#111111] text-white rounded-3xl p-6 shadow-xl mb-8 border border-white/10 relative overflow-hidden">
+                            {/* Background glow decoration */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+                            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
+                            
+                            <div className="relative z-10">
+                                <h3 className="text-lg font-black flex items-center gap-2 mb-2">
+                                    <span className="p-2 bg-red-600/20 rounded-xl text-red-500">
+                                        <FiTrendingUp className="w-5 h-5" />
+                                    </span>
+                                    Insight Peningkatan Terpesat 🚀
+                                </h3>
+                                <p className="text-gray-400 text-xs sm:text-sm mb-6">
+                                    Rekap otomatis metrik-metrik yang mencatatkan lonjakan tertinggi beserta waktu kejadiannya.
+                                </p>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {highlights.map((h, idx) => {
+                                        let borderTheme = "border-pink-500/30 text-pink-400 bg-pink-950/20";
+                                        let ReactIcon = FaInstagram;
+                                        if (h.metricLabel.includes("TikTok")) {
+                                            borderTheme = "border-cyan-500/30 text-cyan-400 bg-cyan-950/20";
+                                            ReactIcon = FaTiktok;
+                                        } else if (h.metricLabel.includes("Website") || h.metricLabel.includes("Visitor")) {
+                                            borderTheme = "border-emerald-500/30 text-emerald-400 bg-emerald-950/20";
+                                            ReactIcon = h.metricLabel.includes("Views") ? FiEye : FiGlobe;
+                                        } else if (h.metricLabel.includes("Customer")) {
+                                            borderTheme = "border-blue-500/30 text-blue-400 bg-blue-950/20";
+                                            ReactIcon = FiUsers;
+                                        } else if (h.metricLabel.includes("Order")) {
+                                            borderTheme = "border-amber-500/30 text-amber-400 bg-amber-950/20";
+                                            ReactIcon = FiShoppingBag;
+                                        } else if (h.metricLabel.includes("Testimoni")) {
+                                            borderTheme = "border-violet-500/30 text-violet-400 bg-violet-950/20";
+                                            ReactIcon = FiMessageSquare;
+                                        } else if (h.metricLabel.includes("Omzet")) {
+                                            borderTheme = "border-red-500/30 text-red-400 bg-red-950/20";
+                                            ReactIcon = FiDollarSign;
+                                        }
+
+                                        const formatValChange = (diff: number, isRev?: boolean) => {
+                                            if (isRev) return `Rp ${diff.toLocaleString("id-ID")}`;
+                                            return diff.toLocaleString("id-ID");
+                                        };
+
+                                        return (
+                                            <div key={idx} className={`p-4 rounded-2xl border ${borderTheme} flex items-start gap-3 hover:scale-[1.01] transition-all`}>
+                                                <div className="p-2.5 rounded-xl bg-white/5 mt-0.5 flex-shrink-0">
+                                                    <ReactIcon className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-sm font-extrabold text-white truncate">{h.metricLabel}</h4>
+                                                    <p className="text-xs text-gray-300 mt-1">
+                                                        Lonjakan tertinggi pada <span className="font-black text-white bg-white/10 px-1.5 py-0.5 rounded">Entri {toRoman(h.entryIndex)}</span>
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-400 mt-0.5">({h.date})</p>
+                                                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                                        <span className="text-xs font-black bg-white/10 px-2 py-0.5 rounded text-green-400 flex items-center gap-0.5">
+                                                            ▲ +{formatValChange(h.diff, h.isCurrency)} {h.unit}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-gray-400">
+                                                            (+{h.percent.toFixed(1)}%)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     )}
 
