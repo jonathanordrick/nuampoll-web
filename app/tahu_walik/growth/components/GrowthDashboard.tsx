@@ -77,7 +77,7 @@ export default function GrowthDashboard() {
     // Card summaries calculations (Instagram, TikTok, Visitors, Omzet) based on latest entry vs previous entry
     const getSummaries = () => {
         if (metrics.length === 0) return null;
-        
+
         // Metrics is sorted by recordedAt ASC (from oldest to newest)
         const latest = metrics[metrics.length - 1];
         const prev = metrics.length > 1 ? metrics[metrics.length - 2] : null;
@@ -140,17 +140,17 @@ export default function GrowthDashboard() {
     return (
         <>
             <AdminNavbar />
-            
+
             <div className="min-h-screen bg-[#fff0c7] pt-32 pb-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto">
-                    
+
                     {/* Header Section */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                 Growth <span className="text-red-600">Tracker</span>
                             </h1>
-                            <p className="text-gray-600 mt-2">Pantau dan kelola performa pertumbuhan bisnis Tahu Walik.</p>
+                            <p className="text-gray-600 mt-2">Pantau dan kelola performa pertumbuhan bisnis Nuampoll.</p>
                         </div>
                         <button
                             onClick={handleOpenCreate}
@@ -200,11 +200,10 @@ export default function GrowthDashboard() {
                                     <button
                                         key={r}
                                         onClick={() => setRange(r)}
-                                        className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                                            range === r
+                                        className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${range === r
                                                 ? "bg-[#111] text-white shadow-md"
                                                 : "text-gray-500 hover:text-gray-800"
-                                        }`}
+                                            }`}
                                     >
                                         {r === "7d" ? "7 Hari" : r === "30d" ? "30 Hari" : r === "90d" ? "90 Hari" : "Semua"}
                                     </button>
